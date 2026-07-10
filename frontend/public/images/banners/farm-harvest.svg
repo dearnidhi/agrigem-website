@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7a4a1f"/>
+      <stop offset="35%" stop-color="#e8762c"/>
+      <stop offset="70%" stop-color="#ffb74d"/>
+      <stop offset="100%" stop-color="#fff3c4"/>
+    </linearGradient>
+    <radialGradient id="sun3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff3c4"/>
+      <stop offset="55%" stop-color="#ff9800"/>
+      <stop offset="100%" stop-color="#e65100"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky3)"/>
+  <circle cx="1150" cy="430" r="140" fill="url(#sun3)"/>
+
+  <!-- distant tree line -->
+  <path d="M0,560 C150,520 300,545 450,525 C600,505 750,535 900,515 C1050,495 1200,525 1350,505 C1450,495 1550,512 1600,505 L1600,600 L0,600 Z" fill="#3e2723" opacity="0.6"/>
+
+  <!-- golden harvest field bands -->
+  <path d="M0,640 C300,595 700,595 1000,635 C1250,668 1450,640 1600,618 L1600,900 L0,900 Z" fill="#6d4c1c"/>
+  <path d="M0,690 C320,655 680,655 1000,685 C1260,710 1460,690 1600,675 L1600,900 L0,900 Z" fill="#9e7b1f"/>
+  <path d="M0,745 C320,718 680,718 1000,742 C1260,762 1460,748 1600,738 L1600,900 L0,900 Z" fill="#c79a25"/>
+  <path d="M0,800 C320,782 680,782 1000,800 C1260,814 1460,805 1600,798 L1600,900 L0,900 Z" fill="#e6b94f"/>
+  <path d="M0,855 C320,845 680,845 1000,852 C1260,858 1460,855 1600,852 L1600,900 L0,900 Z" fill="#f3d27a"/>
+
+  <!-- wheat stalk accents -->
+  <g stroke="#7a5a1a" stroke-width="3" opacity="0.55">
+    <path d="M120,860 L110,790"/>
+    <path d="M160,862 L155,785"/>
+    <path d="M1420,860 L1430,788"/>
+    <path d="M1460,863 L1452,790"/>
+  </g>
+</svg>

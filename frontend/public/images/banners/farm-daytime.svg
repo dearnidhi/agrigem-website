@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7ec8e3"/>
+      <stop offset="55%" stop-color="#bfe6e0"/>
+      <stop offset="100%" stop-color="#f1f8e9"/>
+    </linearGradient>
+    <radialGradient id="sun2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff9c4"/>
+      <stop offset="100%" stop-color="#ffd54f"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky2)"/>
+  <circle cx="1300" cy="150" r="90" fill="url(#sun2)" opacity="0.95"/>
+
+  <!-- clouds -->
+  <g fill="#ffffff" opacity="0.8">
+    <ellipse cx="280" cy="140" rx="90" ry="32"/>
+    <ellipse cx="350" cy="125" rx="60" ry="26"/>
+    <ellipse cx="780" cy="100" rx="70" ry="24"/>
+    <ellipse cx="840" cy="115" rx="50" ry="20"/>
+  </g>
+
+  <!-- distant tree line -->
+  <path d="M0,540 C150,500 300,525 450,505 C600,485 750,515 900,495 C1050,475 1200,510 1350,490 C1450,478 1550,498 1600,488 L1600,580 L0,580 Z" fill="#1b5e20" opacity="0.55"/>
+
+  <!-- crop rows -->
+  <path d="M0,610 C300,560 700,560 1000,605 C1250,640 1450,610 1600,585 L1600,900 L0,900 Z" fill="#2e7d32"/>
+  <path d="M0,665 C320,625 680,625 1000,660 C1260,690 1460,665 1600,648 L1600,900 L0,900 Z" fill="#388e3c"/>
+  <path d="M0,720 C320,690 680,690 1000,715 C1260,738 1460,722 1600,710 L1600,900 L0,900 Z" fill="#4caf50"/>
+  <path d="M0,780 C320,758 680,758 1000,778 C1260,795 1460,783 1600,775 L1600,900 L0,900 Z" fill="#7cb342"/>
+  <path d="M0,840 C320,828 680,828 1000,836 C1260,843 1460,838 1600,835 L1600,900 L0,900 Z" fill="#aed581"/>
+
+  <!-- simple tractor silhouette -->
+  <g transform="translate(1120,760)" fill="#1b5e20" opacity="0.85">
+    <rect x="0" y="-30" width="46" height="26" rx="3"/>
+    <rect x="40" y="-46" width="22" height="20" rx="2"/>
+    <circle cx="14" cy="2" r="16"/>
+    <circle cx="58" cy="2" r="10"/>
+  </g>
+</svg>
