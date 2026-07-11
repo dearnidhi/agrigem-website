@@ -22,8 +22,7 @@ export default function App() {
   if (error) {
     return (
       <div className="api-error">
-        Backend se connect nahi ho paaya. Pehle FastAPI server start karo (uvicorn app.main:app --reload)
-        aur phir page refresh karo.
+        Unable to load page. Please refresh and try again.
       </div>
     );
   }
