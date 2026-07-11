@@ -1,9 +1,9 @@
-import os
-import smtplib
+import base64
+import json
 import logging
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
+import os
+import urllib.error
+import urllib.request
 
 from dotenv import load_dotenv
 
@@ -11,22 +11,56 @@ load_dotenv()
 
 logger = logging.getLogger("uvicorn.error")
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER)
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+SMTP_FROM = os.getenv("SMTP_FROM", "info@agrigem.in")
 CONTACT_TO_EMAIL = os.getenv("CONTACT_TO_EMAIL")
 
 
+def _brevo_send(subject: str, body: str, to_email: str, reply_to: str, attachments: list | None = None) -> bool:
+    if not BREVO_API_KEY:
+        logger.warning("BREVO_API_KEY not set — skipping email send")
+        return False
+
+    payload: dict = {
+        "sender": {"name": "AgriGem", "email": SMTP_FROM},
+        "to": [{"email": to_email}],
+        "replyTo": {"email": reply_to},
+        "subject": subject,
+        "textContent": body,
+    }
+
+    if attachments:
+        payload["attachment"] = attachments
+
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=data,
+        headers={
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return resp.status == 201
+    except urllib.error.HTTPError as e:
+        logger.error("Brevo API HTTP error %s: %s", e.code, e.read().decode())
+        return False
+    except Exception:
+        logger.exception("Failed to send email via Brevo API")
+        return False
+
+
 def send_contact_email(name: str, email: str, phone: str | None, subject: str | None, message: str) -> bool:
-    """Send the contact form submission to the business inbox. Returns True on success."""
-    if not SMTP_USER or not SMTP_PASSWORD or not CONTACT_TO_EMAIL:
-        logger.warning("SMTP not configured (.env missing) — skipping email send, message saved to DB only.")
+    if not CONTACT_TO_EMAIL:
+        logger.warning("CONTACT_TO_EMAIL not set — skipping email send")
         return False
 
     mail_subject = f"New Website Enquiry: {subject}" if subject else f"New Website Enquiry from {name}"
-
     body = (
         f"You received a new enquiry from the website contact form.\n\n"
         f"Name: {name}\n"
@@ -35,28 +69,7 @@ def send_contact_email(name: str, email: str, phone: str | None, subject: str | 
         f"Subject: {subject or '-'}\n\n"
         f"Message:\n{message}\n"
     )
-
-    msg = MIMEMultipart()
-    msg["From"] = SMTP_FROM
-    msg["To"] = CONTACT_TO_EMAIL
-    msg["Reply-To"] = email
-    msg["Subject"] = mail_subject
-    msg.attach(MIMEText(body, "plain"))
-
-    try:
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.sendmail(SMTP_FROM, [CONTACT_TO_EMAIL], msg.as_string())
-        else:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-                server.starttls()
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.sendmail(SMTP_FROM, [CONTACT_TO_EMAIL], msg.as_string())
-        return True
-    except Exception:
-        logger.exception("Failed to send contact form email")
-        return False
+    return _brevo_send(mail_subject, body, CONTACT_TO_EMAIL, email)
 
 
 def send_application_email(
@@ -67,9 +80,8 @@ def send_application_email(
     message: str | None,
     resume_path: str | None,
 ) -> bool:
-    """Send a job application notification with the resume attached. Returns True on success."""
-    if not SMTP_USER or not SMTP_PASSWORD or not CONTACT_TO_EMAIL:
-        logger.warning("SMTP not configured (.env missing) — skipping email send, application saved to DB only.")
+    if not CONTACT_TO_EMAIL:
+        logger.warning("CONTACT_TO_EMAIL not set — skipping email send")
         return False
 
     body = (
@@ -81,30 +93,16 @@ def send_application_email(
         f"Message:\n{message or '-'}\n"
     )
 
-    msg = MIMEMultipart()
-    msg["From"] = SMTP_FROM
-    msg["To"] = CONTACT_TO_EMAIL
-    msg["Reply-To"] = email
-    msg["Subject"] = f"New Job Application: {job_title} — {name}"
-    msg.attach(MIMEText(body, "plain"))
-
+    attachments = None
     if resume_path and os.path.isfile(resume_path):
         with open(resume_path, "rb") as f:
-            attachment = MIMEApplication(f.read(), Name=os.path.basename(resume_path))
-        attachment["Content-Disposition"] = f'attachment; filename="{os.path.basename(resume_path)}"'
-        msg.attach(attachment)
+            content = base64.b64encode(f.read()).decode()
+        attachments = [{"name": os.path.basename(resume_path), "content": content}]
 
-    try:
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.sendmail(SMTP_FROM, [CONTACT_TO_EMAIL], msg.as_string())
-        else:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-                server.starttls()
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.sendmail(SMTP_FROM, [CONTACT_TO_EMAIL], msg.as_string())
-        return True
-    except Exception:
-        logger.exception("Failed to send job application email")
-        return False
+    return _brevo_send(
+        f"New Job Application: {job_title} — {name}",
+        body,
+        CONTACT_TO_EMAIL,
+        email,
+        attachments,
+    )
